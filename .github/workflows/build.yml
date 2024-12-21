@@ -55,9 +55,10 @@ jobs:
           provenance: false
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.short-sha.outputs.SHA }}
+            ${{ steps.meta.outputs.tags }}${{ !startsWith(steps.image_prefix.outputs.prefix, 'main') && format('-{0}', steps.image_prefix.outputs.prefix) || '' }}-${{ github.run_number }}
+            latest
+            ${{ github.sha }}
+            ${{ steps.short-sha.outputs.SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
