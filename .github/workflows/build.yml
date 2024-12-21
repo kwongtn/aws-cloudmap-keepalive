@@ -68,8 +68,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,enable=true,priority=100,prefix=,suffix=,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,enable=true,priority=100,prefix=,suffix=${{ matrix.goarch }},format=short
+            type=raw,value=latest,suffix=${{ matrix.goarch }},enable={{is_default_branch}}
 
       - name: Build and push
         id: build-image
