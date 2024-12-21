@@ -15,10 +15,31 @@ jobs:
     permissions:
       contents: write
       packages: write
+    strategy:
+      matrix:
+        goos:
+          - linux
+        goarch:
+          - amd64
+          - arm64
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Build Go binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          go mod tidy
+          go build -o main .
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -38,6 +59,9 @@ jobs:
         run: |
           echo "prefix=$(echo ${{ github.ref_name }} | sed 's:/.*::')" >> "$GITHUB_OUTPUT"
 
+      - uses: benjlevesque/short-sha@v3.0
+        id: short-sha
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -51,7 +75,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.goos }}/${{ matrix.goarch }}
           provenance: false
           push: true
           tags: |
@@ -61,6 +85,3 @@ jobs:
             ${{ steps.short-sha.outputs.SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - uses: benjlevesque/short-sha@v3.0
-        id: short-sha
