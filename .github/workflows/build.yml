@@ -69,6 +69,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=sha,enable=true,priority=100,prefix=,suffix=,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push
         id: build-image
@@ -80,8 +81,5 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.tags }}${{ !startsWith(steps.image_prefix.outputs.prefix, 'main') && format('-{0}', steps.image_prefix.outputs.prefix) || '' }}-${{ github.run_number }}
-            latest
-            ${{ github.sha }}
-            ${{ steps.short-sha.outputs.SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
