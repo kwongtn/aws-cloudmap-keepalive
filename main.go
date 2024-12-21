@@ -13,6 +13,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -30,15 +31,22 @@ type Config struct {
 }
 
 func main() {
-	// Load Kubernetes configuration
 	kubeconfig, kubeconfig_set := os.LookupEnv("KUBECONFIG")
-	if !kubeconfig_set {
-		kubeconfig = "~/.kube/config"
-	}
-	log.Printf("Reading kubeconfig from: %s", kubeconfig)
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		panic(fmt.Sprintf("Error building kubeconfig: %v", err))
+
+	var config *rest.Config
+	var err error
+	if kubeconfig_set {
+		log.Printf("Reading kubeconfig from: %s", kubeconfig)
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			panic(fmt.Sprintf("Error building kubeconfig: %v", err))
+		}
+	} else {
+		config, err = rest.InClusterConfig()
+
+		if err != nil {
+			panic(err.Error())
+		}
 	}
 
 	// Create Kubernetes client
